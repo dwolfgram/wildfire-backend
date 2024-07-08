@@ -1,20 +1,13 @@
-import { Router } from "express";
+type Services = {
+  [key: string]: any
+}
 
-abstract class BaseController {
-  protected router: Router = Router();
+abstract class BaseController<T extends Services> {
+  protected services: T
 
-  protected service: any;
-
-  constructor({ service }: { service: any }) {
-    this.service = service;
-    this.initializedRoutes();
-  }
-
-  protected abstract initializedRoutes(): void;
-
-  public getRouter(): Router {
-    return this.router;
+  constructor({ services }: { services: T }) {
+    this.services = services
   }
 }
 
-export default BaseController;
+export default BaseController

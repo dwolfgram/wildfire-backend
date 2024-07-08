@@ -1,20 +1,25 @@
-import API_VERSION from "@/utils/version";
-// import API_VERSION from "../../utils/version";
-import BaseController from "@/common/base-controller";
-import { UserService } from "./user.service";
+import { Request, Response } from "express"
+import BaseController from "@/common/base-controller"
+import { UserService } from "./user.service"
+import { asyncHandler } from "@/utils/asyncHandler"
 
-class UserController extends BaseController {
-  protected initializedRoutes(): void {
-    this.router.put(`${API_VERSION}/user/:userId`, this.service.updateUser);
-    this.router.get(`${API_VERSION}/user/all_users`, this.service.getUsers);
-    this.router.get(`${API_VERSION}/user/:userId`, this.service.getUserById);
-    this.router.post(
-      `${API_VERSION}/user/create_user`,
-      this.service.createUser
-    );
-  }
+export class UserController extends BaseController<{
+  userService: UserService
+}> {
+  updateUser = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.user
+    const updates = req.body
+    const data = await this.services.userService.updateUser(id, updates)
+
+    return res.send(data)
+  })
+  getUserProfile = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.query
+    const data = await this.services.userService.getUserProfile(
+      req.user.id,
+      userId as string
+    )
+
+    return res.send(data)
+  })
 }
-
-export default new UserController({
-  service: new UserService(),
-}).getRouter();

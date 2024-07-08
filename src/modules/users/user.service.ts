@@ -1,100 +1,62 @@
-import supabaseAdmin from "@/config/supabase-admin";
-import { Request, Response } from "express";
+import db from "@/lib/db"
+import { User } from "@prisma/client"
+
 export class UserService {
-  async createUser(req: Request, res: Response) {
-    const { email, password, name } = req.body;
+  updateUser = async (
+    userId: string,
+    updatedUser: Partial<User>
+  ): Promise<User | null> => {
     try {
-      const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email: email,
-        password: password,
-        user_metadata: { name: name },
-      });
-
-      if (error) {
-        return res.status(parseInt(`${error.status}`, 10)).send({
-          error: error?.message,
-          code: error.code,
-        });
-      }
-      res.send({
-        message: "Success",
-        content: data,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "An unexpected error occured" });
+      const updated = await db.user.update({
+        where: {
+          id: userId,
+        },
+        data: updatedUser,
+      })
+      return updated
+    } catch (error) {
+      console.error("Error updating user:", error)
+      throw new Error("Unable to update user")
     }
   }
-
-  async getUsers(req: Request, res: Response) {
+  getUserProfile = async (
+    authUserId: string,
+    userId: string
+  ): Promise<Partial<User & { isFollowing: boolean }> | null> => {
     try {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+      const profile = await db.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          username: true,
+          displayName: true,
+          pfp: true,
+          _count: {
+            select: {
+              followers: true,
+              following: true,
+            },
+          },
+        },
+      })
 
-      if (error) {
-        res.status(parseInt(`${error.status}`, 10)).send({
-          error: error?.message,
-          code: error.code,
-        });
+      const isFollowing = await db.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: authUserId,
+            followingId: userId,
+          },
+        },
+      })
+
+      return {
+        ...profile,
+        isFollowing: !!isFollowing,
       }
-
-      return res.json({
-        message: "Success",
-        content: data,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "An unexpected error occured" });
-    }
-  }
-
-  async getUserById(req: Request, res: Response) {
-    try {
-      const { data, error } = await supabaseAdmin.auth.admin.getUserById(
-        req.params.userId
-      );
-
-      console.log(req.params.userId);
-
-      if (error) {
-        res.status(parseInt(`${error.status}`, 10)).send({
-          error: error?.message,
-          code: error.code,
-        });
-      }
-
-      return res.json({
-        message: "Success",
-        content: data,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "An unexpected error occured" });
-    }
-  }
-
-  async updateUser(req: Request, res: Response) {
-    try {
-      const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
-        req.params.userId,
-        {
-          ...req.body,
-        }
-      );
-
-      if (error) {
-        return res.status(error.status || 400).send({
-          error: error?.message,
-          code: error.code,
-        });
-      }
-
-      res.json({
-        message: "Success",
-        content: data,
-      });
-    } catch (err) {
-      console.error("ERR!!", err);
-      res.status(500).json({ error: "An unexpected error occured" });
+    } catch (error) {
+      console.error("Error fetching user profile:", error)
+      throw new Error("Unable to fetch user profile")
     }
   }
 }

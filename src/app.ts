@@ -1,28 +1,25 @@
-import express, { Application, Request, Response } from "express";
-import dotenv from "dotenv";
-import morgan from "morgan";
-import bodyParser from "body-parser";
-import supabase from "./config/supabase";
-import Bootstrap from "./bootstrap";
-import errorHandler from "./middlewares/errorHandler";
-import { initializedRoutes } from "./routes";
-import accessLogStream from "./common/access-log-stream";
+import express, { Application } from "express"
+import dotenv from "dotenv"
+import morgan from "morgan"
+import bodyParser from "body-parser"
+import Bootstrap from "./bootstrap"
+import errorHandler from "./middlewares/errorHandler"
+import { initializedRoutes } from "./routes"
+import accessLogStream from "./common/access-log-stream"
 
-dotenv.config();
+dotenv.config()
 
-const app: Application = express();
-
-// middlewares
-app.use(errorHandler);
+const app: Application = express()
 
 // using morgan for logs then store it on the logs/access.log directory
-app.use(
-  morgan("dev", {
-    stream: accessLogStream,
-  })
-);
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(morgan("dev"))
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
-Bootstrap(app);
-initializedRoutes(app);
+app.get("/", (req, res) => {
+  res.send("Hello World")
+})
+
+initializedRoutes(app)
+app.use(errorHandler)
+Bootstrap(app)

@@ -1,4 +1,4 @@
-import { Application } from "express";
+import { Application } from "express"
 
 /**
  * Initializes the application
@@ -6,11 +6,11 @@ import { Application } from "express";
  */
 
 const Bootstrap = async (app: Application) => {
-  const PORT: Number = parseInt(`${process.env.PORT}`, 10) || 8000;
+  const PORT: Number = parseInt(`${process.env.PORT}`, 10) || 8000
 
   app.listen(PORT, () => {
-    console.log(`Server is running at https://localhost:${PORT}`);
-  });
-};
+    console.log(`Server is running at http://localhost:${PORT}`)
+  })
+}
 
-export default Bootstrap;
+export default Bootstrap

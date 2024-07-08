@@ -1,5 +1,5 @@
-import { CustomError } from "../errors/customError";
-import { NextFunction, Request, Response } from "express";
+import { CustomError } from "../errors/customError"
+import { NextFunction, Request, Response } from "express"
 
 const errorHandler = async (
   error: Error,
@@ -7,10 +7,10 @@ const errorHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(error.message);
+  console.log(error.message)
 
   if (error instanceof CustomError) {
-    const { statusCode, errors, logging } = error;
+    const { statusCode, errors, logging } = error
 
     if (logging) {
       console.error(
@@ -23,17 +23,15 @@ const errorHandler = async (
           null,
           2
         )
-      );
+      )
     }
 
-    return res.status(statusCode).send({ errors });
+    return res.status(statusCode).send({ errors })
   }
 
-  console.error(JSON.stringify(error, null, 2));
+  console.error(JSON.stringify(error, null, 2))
 
-  return res
-    .status(500)
-    .send({ errors: [{ message: "Something went wrong" }] });
-};
+  return res.status(500).send({ errors: [{ message: "Something went wrong" }] })
+}
 
-export default errorHandler;
+export default errorHandler
