@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "TrackType" AS ENUM ('SAVED_TRACK', 'TOP_LISTEN', 'DISCOVER_WEEKLY');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" UUID NOT NULL,
@@ -12,12 +15,13 @@ CREATE TABLE "User" (
     "explicitContent" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "notificationToken" TEXT,
+    "discoverWeeklyId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Song" (
+CREATE TABLE "SentSong" (
     "id" UUID NOT NULL,
     "senderId" UUID NOT NULL,
     "receiverId" UUID NOT NULL,
@@ -33,16 +37,26 @@ CREATE TABLE "Song" (
     "seen" BOOLEAN NOT NULL DEFAULT false,
     "seenAt" TIMESTAMP(3),
     "conversationId" UUID,
+    "originSongId" UUID,
 
-    CONSTRAINT "Song_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "SentSong_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "SongHistory" (
+CREATE TABLE "LikedSong" (
     "id" UUID NOT NULL,
-    "songId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "spotifyId" TEXT NOT NULL,
+    "spotifyUri" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "albumImage" TEXT NOT NULL,
+    "albumName" TEXT NOT NULL,
+    "artistName" TEXT NOT NULL,
+    "durationMs" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "originSongId" UUID,
 
-    CONSTRAINT "SongHistory_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LikedSong_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -95,9 +109,21 @@ CREATE TABLE "SpotifyToken" (
 );
 
 -- CreateTable
-CREATE TABLE "_SongHistoryToUser" (
-    "A" UUID NOT NULL,
-    "B" UUID NOT NULL
+CREATE TABLE "UserTrack" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "spotifyId" TEXT NOT NULL,
+    "spotifyUri" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "artistName" TEXT NOT NULL,
+    "artistUri" TEXT NOT NULL,
+    "albumName" TEXT NOT NULL,
+    "albumImage" TEXT NOT NULL,
+    "durationMs" INTEGER NOT NULL,
+    "trackType" "TrackType" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserTrack_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -119,7 +145,10 @@ CREATE UNIQUE INDEX "User_notificationToken_key" ON "User"("notificationToken");
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
-CREATE INDEX "Song_receiverId_idx" ON "Song"("receiverId");
+CREATE INDEX "SentSong_receiverId_idx" ON "SentSong"("receiverId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LikedSong_userId_spotifyId_key" ON "LikedSong"("userId", "spotifyId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Follow_followerId_followingId_key" ON "Follow"("followerId", "followingId");
@@ -137,22 +166,25 @@ CREATE UNIQUE INDEX "SpotifyToken_userId_key" ON "SpotifyToken"("userId");
 CREATE INDEX "SpotifyToken_userId_idx" ON "SpotifyToken"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_SongHistoryToUser_AB_unique" ON "_SongHistoryToUser"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_SongHistoryToUser_B_index" ON "_SongHistoryToUser"("B");
+CREATE UNIQUE INDEX "UserTrack_userId_spotifyUri_key" ON "UserTrack"("userId", "spotifyUri");
 
 -- AddForeignKey
-ALTER TABLE "Song" ADD CONSTRAINT "Song_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SentSong" ADD CONSTRAINT "SentSong_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Song" ADD CONSTRAINT "Song_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SentSong" ADD CONSTRAINT "SentSong_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Song" ADD CONSTRAINT "Song_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "SentSong" ADD CONSTRAINT "SentSong_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SongHistory" ADD CONSTRAINT "SongHistory_songId_fkey" FOREIGN KEY ("songId") REFERENCES "Song"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SentSong" ADD CONSTRAINT "SentSong_originSongId_fkey" FOREIGN KEY ("originSongId") REFERENCES "SentSong"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LikedSong" ADD CONSTRAINT "LikedSong_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LikedSong" ADD CONSTRAINT "LikedSong_originSongId_fkey" FOREIGN KEY ("originSongId") REFERENCES "SentSong"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -173,7 +205,4 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 ALTER TABLE "SpotifyToken" ADD CONSTRAINT "SpotifyToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_SongHistoryToUser" ADD CONSTRAINT "_SongHistoryToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "SongHistory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_SongHistoryToUser" ADD CONSTRAINT "_SongHistoryToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserTrack" ADD CONSTRAINT "UserTrack_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

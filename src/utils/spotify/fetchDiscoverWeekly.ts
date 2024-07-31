@@ -12,33 +12,37 @@ export const fetchDiscoverWeeklyTracks = async (
   playlistId: string,
   spotifyConfig: AccessToken
 ) =>
-  withSpotifyApi(spotifyConfig, async (spotify: SpotifyApi) => {
-    let allTracks: PlaylistedTrack<Track>[] = []
-    let offset = 0
-    let total = 0
-    let limit: 50 = 50
+  withSpotifyApi(
+    spotifyConfig,
+    async (spotify: SpotifyApi) => {
+      let allTracks: PlaylistedTrack<Track>[] = []
+      let offset = 0
+      let total = 0
+      let limit: 50 = 50
 
-    while (true) {
-      const { items, total: fetchedTotal } =
-        await spotify.playlists.getPlaylistItems(
-          playlistId,
-          undefined,
-          undefined,
-          limit,
-          offset
-        )
+      while (true) {
+        const { items, total: fetchedTotal } =
+          await spotify.playlists.getPlaylistItems(
+            playlistId,
+            undefined,
+            undefined,
+            limit,
+            offset
+          )
 
-      allTracks = [...allTracks, ...items]
-      offset += limit
-      total = fetchedTotal
+        allTracks = [...allTracks, ...items]
+        offset += limit
+        total = fetchedTotal
 
-      if (allTracks.length >= total) break
+        if (allTracks.length >= total) break
 
-      await wait(500)
-    }
+        await wait(500)
+      }
 
-    return allTracks
-  })
+      return allTracks
+    },
+    true
+  )
 
 export const fetchDiscoverWeeklyPlaylists = async (
   spotifyConfig: AccessToken

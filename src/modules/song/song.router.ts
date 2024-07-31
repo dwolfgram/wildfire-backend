@@ -11,6 +11,26 @@ class SongRouter extends BaseRouter<SongController> {
       spotifyAuthMiddleware,
       this.controller.sendSong
     )
+    this.router.get(
+      `${API_VERSION}/song/history`,
+      spotifyAuthMiddleware,
+      this.controller.getSongHistory
+    )
+    this.router.get(
+      `${API_VERSION}/song/likes`,
+      spotifyAuthMiddleware,
+      this.controller.getUserLikedSongIds
+    )
+    this.router.post(
+      `${API_VERSION}/song/like`,
+      spotifyAuthMiddleware,
+      this.controller.likeSong
+    )
+    this.router.post(
+      `${API_VERSION}/song/unlike`,
+      spotifyAuthMiddleware,
+      this.controller.unlikeSong
+    )
   }
 }
 

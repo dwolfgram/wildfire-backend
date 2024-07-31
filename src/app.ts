@@ -5,7 +5,8 @@ import bodyParser from "body-parser"
 import Bootstrap from "./bootstrap"
 import errorHandler from "./middlewares/errorHandler"
 import { initializedRoutes } from "./routes"
-import accessLogStream from "./common/access-log-stream"
+import "@/crons/newUsers"
+import "@/crons/wildfireDiscover"
 
 dotenv.config()
 

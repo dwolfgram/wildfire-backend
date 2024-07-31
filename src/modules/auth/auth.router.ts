@@ -7,12 +7,17 @@ import { AuthService } from "./auth.service"
 class AuthRouter extends BaseRouter<AuthController> {
   protected initializedRoutes(): void {
     this.router.post(
-      `${API_VERSION}/auth/token_swap`,
-      this.controller.signUpOrLogin
+      `${API_VERSION}/auth/token-swap`,
+      this.controller.swapCodeForTokens
+    )
+    this.router.post(`${API_VERSION}/auth/login`, this.controller.signUpOrLogin)
+    this.router.post(
+      `${API_VERSION}/auth/refresh-token`,
+      this.controller.refreshToken
     )
     this.router.post(
-      `${API_VERSION}/auth/refresh_token`,
-      this.controller.refreshToken
+      `${API_VERSION}/auth/refresh-token-frontend`,
+      this.controller.refreshForSpotifyOnFrontend
     )
   }
 }

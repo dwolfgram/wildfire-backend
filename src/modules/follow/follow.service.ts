@@ -1,20 +1,21 @@
 import db from "@/lib/db"
-import { Follow } from "@prisma/client"
+import { Follow, User } from "@prisma/client"
+import { NotificationService } from "../notifications/notification.service"
 
 export class FollowService {
   followUser = async (
-    userId: string,
+    authUser: User,
     userToFollowId: string
   ): Promise<Follow> => {
     try {
-      if (userId === userToFollowId) {
+      if (authUser.id === userToFollowId) {
         throw new Error("You cannot follow yourself.")
       }
 
       const existingFollow = await db.follow.findUnique({
         where: {
           followerId_followingId: {
-            followerId: userId,
+            followerId: authUser.id,
             followingId: userToFollowId,
           },
         },
@@ -26,10 +27,19 @@ export class FollowService {
 
       const follow = await db.follow.create({
         data: {
-          followerId: userId,
+          followerId: authUser.id,
           followingId: userToFollowId,
           accepted: true,
         },
+      })
+
+      const notificationService = new NotificationService()
+      await notificationService.sendNotification({
+        toUserId: userToFollowId,
+        fromUserId: authUser.id,
+        title: `@${authUser.username}`,
+        message: `just followed you`,
+        type: "NEW_FOLLOWER",
       })
 
       return follow

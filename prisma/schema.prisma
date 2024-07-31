@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,7 +10,7 @@ datasource db {
 model User {
   id                    String            @id @default(uuid()) @db.Uuid
   email                 String            @unique
-  username              String?            @unique
+  username              String?           @unique
   spotifyId             String            @unique
   spotifyUri            String            @unique
   pfp                   String?
@@ -25,28 +19,31 @@ model User {
   displayName           String
   explicitContent       Boolean
   createdAt             DateTime          @default(now())
-  sentSongs             Song[]            @relation("SenderSongs")
-  receivedSongs         Song[]            @relation("ReceiverSongs")
-  history               SongHistory[]
+  createdInitialTracksAt DateTime?      
+  sentSongs             Song[]          @relation("SenderSongs")
+  receivedSongs         Song[]          @relation("ReceiverSongs")
+  userTracks            Song[]           @relation("UserTracks")
   followers             Follow[]          @relation("followers")
   following             Follow[]          @relation("following")
-  notifications         Notification[]
+  notifications         Notification[]    @relation("UserNotifications")
+  sentNotifications     Notification[]    @relation("UserSentNotifications")
   sentConversations     Conversation[]    @relation("userA")
   receivedConversations Conversation[]    @relation("userB")
-  notificationToken     String?            @unique
+  notificationToken     String?           @unique
   spotifyTokens         SpotifyToken[]    @relation("UserSpotifyTokens")
-  userTracks            UserTrack[]     @relation("UserUserTrack")
-  discoverWeeklyId      String?         
+  discoverWeeklyId      String?           
 
   @@index([email])
 }
 
 model Song {
-  id              String        @id @default(uuid()) @db.Uuid
-  senderId        String        @db.Uuid
-  sender          User          @relation("SenderSongs", fields: [senderId], references: [id])
-  receiverId      String        @db.Uuid
-  receiver        User          @relation("ReceiverSongs", fields: [receiverId], references: [id])
+  id              String     @id @default(uuid()) @db.Uuid
+  userId          String?    @db.Uuid
+  user            User?      @relation("UserTracks", fields: [userId], references: [id])
+  senderId        String?    @db.Uuid
+  sender          User?      @relation("SenderSongs", fields: [senderId], references: [id])
+  receiverId      String?    @db.Uuid
+  receiver        User?      @relation("ReceiverSongs", fields: [receiverId], references: [id])
   spotifyId       String
   albumImage      String
   albumName       String
@@ -55,25 +52,18 @@ model Song {
   artistName      String
   artistUri       String
   durationMs      Int
-  history         SongHistory[]
-  sentAt          DateTime      @default(now())
-  seen            Boolean       @default(false)
+  createdAt       DateTime  @default(now())
+  seen            Boolean   @default(false)
   seenAt          DateTime?
-  conversationId  String?       @db.Uuid
+  trackType       TrackType
+  conversationId  String?   @db.Uuid
   conversation    Conversation? @relation("conversationMessages", fields: [conversationId], references: [id])
+  history         Song[]    @relation("SongHistory")
+  inHistoryOf     Song[]    @relation("SongHistory")
 
-  @@index([receiverId])
-}
-
-model SongHistory {
-  id       String   @id @default(uuid()) @db.Uuid
-  songId   String   @db.Uuid
-  song     Song     @relation(fields: [songId], references: [id])
-  senderId String   @db.Uuid
-  sender   User     @relation(fields: [senderId], references: [id])
-  createdAt DateTime @default(now())
-
-  @@index([songId])
+  @@unique([userId, spotifyId, trackType])
+  @@index([conversationId])
+  @@index([userId, trackType])
 }
 
 model Follow {
@@ -86,6 +76,8 @@ model Follow {
   following     User     @relation("followers", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Conversation {
@@ -97,21 +89,23 @@ model Conversation {
 
   userA           User     @relation("userA", fields: [userAId], references: [id])
   userB           User     @relation("userB", fields: [userBId], references: [id])
-  messages        Song[]   @relation("conversationMessages")
+  messages        Song[] @relation("conversationMessages")
 
   @@unique([userAId, userBId])
+  @@index([id, userAId, userBId])
 }
 
 model Notification {
   id          String   @id @default(uuid()) @db.Uuid
   userId      String   @db.Uuid
-  type        String
+  type        NotificationType
   message     String
   seen        Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  user        User     @relation(fields: [userId], references: [id])
+  senderId    String?   @db.Uuid
+  sender      User?    @relation("UserSentNotifications", fields: [senderId], references: [id])
+  user        User     @relation("UserNotifications", fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -130,24 +124,18 @@ model SpotifyToken {
   @@index([userId])
 }
 
-model UserTrack {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  user        User     @relation("UserUserTrack", fields: [userId], references: [id])
-  spotifyId   String
-  spotifyUri  String
-  name        String
-  artistName  String
-  artistUri   String
-  albumName   String
-  albumImage  String
-  durationMs  Int
-  trackType   TrackType
-  createdAt   DateTime @default(now())
-}
-
 enum TrackType {
   SAVED_TRACK
   TOP_LISTEN
   DISCOVER_WEEKLY
+  SENT_TRACK
+  WILDFIRE_LIKE
+}
+
+enum NotificationType {
+  NEW_FOLLOWER
+  RECEIVED_SONG
+  LIKED_SONG
+  ALERT
+  SHARED_SONG
 }

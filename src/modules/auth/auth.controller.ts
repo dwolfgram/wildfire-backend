@@ -7,22 +7,38 @@ import { asyncHandler } from "@/utils/asyncHandler"
 export class AuthController extends BaseController<{
   authService: AuthService
 }> {
-  signUpOrLogin = asyncHandler(
+  swapCodeForTokens = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { code, redirectUri } = req.body
-      const data = await this.services.authService.signUpOrLogin(
+      const data = await this.services.authService.swapCodeForTokens(
         code,
         redirectUri
+      )
+      return res.send(data)
+    }
+  )
+  signUpOrLogin = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { spotifyData } = req.body
+      const data = await this.services.authService.signUpOrLogin(spotifyData)
+      return res.send(data)
+    }
+  )
+  refreshToken = asyncHandler(async (req: Request, res: Response) => {
+    const { refreshToken } = req.body
+    console.log("HERE")
+    const data = await this.services.authService.refreshToken(refreshToken)
+
+    return res.send(data)
+  })
+  refreshForSpotifyOnFrontend = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { refresh_token } = req.body
+      const data = await this.services.authService.refreshForSpotifyOnFrontend(
+        refresh_token
       )
 
       return res.send(data)
     }
   )
-
-  refreshToken = asyncHandler(async (req: Request, res: Response) => {
-    const { refreshToken } = req.body
-    const data = await this.services.authService.refreshToken(refreshToken)
-
-    return res.send(data)
-  })
 }

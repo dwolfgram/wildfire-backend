@@ -10,7 +10,7 @@ export class FollowController extends BaseController<{
   followUser = asyncHandler(async (req: Request, res: Response) => {
     const { userId: userToFollowId } = req.body
     const data = await this.services.followService.followUser(
-      req.user.id,
+      req.user,
       userToFollowId as string
     )
 

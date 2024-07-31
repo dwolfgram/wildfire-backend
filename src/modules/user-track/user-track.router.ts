@@ -7,6 +7,11 @@ import spotifyAuthMiddleware from "@/middlewares/auth"
 class UserTrackRouter extends BaseRouter<UserTrackController> {
   protected initializedRoutes(): void {
     this.router.get(
+      `${API_VERSION}/user-tracks/wildfire-weekly`,
+      spotifyAuthMiddleware,
+      this.controller.getWildfireWeekly
+    )
+    this.router.get(
       `${API_VERSION}/user-tracks/discover-weekly-playlists`,
       spotifyAuthMiddleware,
       this.controller.getUserDiscoverWeeklyPlaylists

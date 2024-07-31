@@ -19,7 +19,10 @@ export class UserController extends BaseController<{
       req.user.id,
       userId as string
     )
-
     return res.send(data)
+  })
+  getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    console.log(req.user)
+    return res.send(req.user)
   })
 }

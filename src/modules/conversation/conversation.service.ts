@@ -53,35 +53,80 @@ export class ConversationService {
   }
   getConversationById = async (authUserId: string, conversationId: string) => {
     try {
-      const conversation = await db.conversation.findUnique({
+      const conversation = await db.conversation.findFirst({
         where: {
           id: conversationId,
-          OR: [{ userAId: authUserId }, { userBId: authUserId }],
+          OR: [
+            {
+              userAId: authUserId,
+            },
+            {
+              userBId: authUserId,
+            },
+          ],
         },
         include: {
           messages: {
+            where: {
+              trackType: "SENT_TRACK",
+              OR: [
+                {
+                  senderId: authUserId,
+                },
+                {
+                  receiverId: authUserId,
+                },
+              ],
+            },
             include: {
               sender: {
                 select: {
                   id: true,
-                  pfp: true,
                   username: true,
+                  pfp: true,
                 },
               },
               history: {
-                include: {
+                select: {
+                  id: true,
                   sender: {
                     select: {
                       id: true,
-                      pfp: true,
                       username: true,
+                      pfp: true,
+                    },
+                  },
+                  user: {
+                    select: {
+                      id: true,
+                      username: true,
+                      pfp: true,
+                    },
+                  },
+                },
+              },
+              inHistoryOf: {
+                select: {
+                  id: true,
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                      pfp: true,
+                    },
+                  },
+                  user: {
+                    select: {
+                      id: true,
+                      username: true,
+                      pfp: true,
                     },
                   },
                 },
               },
             },
             orderBy: {
-              sentAt: "desc",
+              createdAt: "desc",
             },
           },
           userA: {
@@ -102,7 +147,6 @@ export class ConversationService {
           },
         },
       })
-
       return conversation
     } catch (error) {
       console.error("Error fetching conversation:", error)

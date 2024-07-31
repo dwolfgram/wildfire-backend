@@ -7,12 +7,21 @@ import { asyncHandler } from "@/utils/asyncHandler"
 export class UserTrackController extends BaseController<{
   userTrackService: UserTrackService
 }> {
+  getWildfireWeekly = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.query
+    const data = await this.services.userTrackService.getWildfireWeekly(
+      userId as string
+    )
+
+    return res.send(data)
+  })
   getUserTracksByType = asyncHandler(async (req: Request, res: Response) => {
-    const { trackType } = req.query
+    const { trackType, page, limit } = req.query
     const { userId } = req.params
     const data = await this.services.userTrackService.getUserTracksByType(
       userId,
-      trackType as any
+      trackType as any,
+      { page: parseInt(page as string), limit: parseInt(limit as string) }
     )
 
     return res.send(data)

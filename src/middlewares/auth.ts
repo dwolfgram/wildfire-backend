@@ -48,7 +48,8 @@ const spotifyAuthMiddleware = async (
     req.spotifyApiConfig = formatSpotifyToken(tokenRecord)
     next()
   } catch (error) {
-    console.log("auth error", error)
+    console.log("auth error:", error)
+    console.log("Error with token:", token)
     return next(new UnauthorizedError("Invalid access token."))
   }
 }

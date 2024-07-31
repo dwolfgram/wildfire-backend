@@ -16,6 +16,11 @@ class UserRouter extends BaseRouter<UserController> {
       spotifyAuthMiddleware,
       this.controller.getUserProfile
     )
+    this.router.get(
+      `${API_VERSION}/user/me`,
+      spotifyAuthMiddleware,
+      this.controller.getCurrentUser
+    )
   }
 }
 

@@ -7,6 +7,9 @@ export class UserService {
     updatedUser: Partial<User>
   ): Promise<User | null> => {
     try {
+      if (updatedUser.username) {
+        updatedUser.username = updatedUser.username.toLowerCase()
+      }
       const updated = await db.user.update({
         where: {
           id: userId,
