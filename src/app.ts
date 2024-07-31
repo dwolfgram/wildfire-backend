@@ -1,3 +1,4 @@
+import "module-alias/register"
 import express, { Application } from "express"
 import dotenv from "dotenv"
 import morgan from "morgan"
@@ -5,6 +6,7 @@ import bodyParser from "body-parser"
 import Bootstrap from "./bootstrap"
 import errorHandler from "./middlewares/errorHandler"
 import { initializedRoutes } from "./routes"
+
 import "@/crons/newUsers"
 import "@/crons/wildfireDiscover"
 
