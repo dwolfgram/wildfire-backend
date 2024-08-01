@@ -18,7 +18,7 @@ const initializedController = (dir: string, app: Application) => {
     if (stat.isDirectory()) {
       initializedController(filePath, app)
     } else {
-      if (file.endsWith(".router.ts")) {
+      if (file.endsWith(".router.ts") || file.endsWith(".router.js")) {
         app.use(require(filePath).default)
       }
     }
