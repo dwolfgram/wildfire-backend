@@ -34,6 +34,7 @@ export class AuthService {
       }
     )
 
+    console.log("Tokens:", data)
     return data
   }
   async signUpOrLogin(spotifyApiConfig: AccessToken) {
