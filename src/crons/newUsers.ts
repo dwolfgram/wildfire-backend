@@ -1,4 +1,5 @@
 import db from "@/lib/db"
+import { NotificationService } from "@/modules/notifications/notification.service"
 import { UserTrackService } from "@/modules/user-track/user-track.service"
 import { formatSpotifyToken } from "@/utils/formatSpotifyToken"
 import { wait } from "@/utils/wait"
@@ -10,6 +11,8 @@ let isProccessing = false
 async function processNewUsers() {
   try {
     isProccessing = true
+    const notificationService = new NotificationService()
+
     const newUsers = await db.user.findMany({
       where: {
         username: { not: null },
@@ -70,6 +73,12 @@ async function processNewUsers() {
         )
 
         await wait(10000)
+        await notificationService.sendNotification({
+          toUserId: userId,
+          title: `@${user.username}`,
+          message: "your spotify profile has synced",
+          type: "ALERT",
+        })
         console.log(`Processed user ${user.id}`)
       } catch (error) {
         console.error(`Failed to process user ${user.id}:`, error)

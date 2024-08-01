@@ -100,9 +100,6 @@ export class AuthService {
           }
         }
 
-        console.log("unencrypted:", spotifyApiConfig.refresh_token)
-        console.log("encrypted", encrypt(spotifyApiConfig.refresh_token))
-
         // Upsert the Spotify token for the user
         const spotifyToken = {
           accessToken: encrypt(spotifyApiConfig.access_token),
