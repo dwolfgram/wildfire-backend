@@ -7,9 +7,10 @@ interface CreateNotification {
   toUserId: string
   title: string
   message: string
+  type: NotificationType
   fromUserId?: string
   data?: Record<string, any>
-  type: NotificationType
+  saveToDb?: boolean
 }
 
 export class NotificationService {
@@ -20,6 +21,7 @@ export class NotificationService {
     message,
     data,
     type,
+    saveToDb = true,
   }: CreateNotification) => {
     try {
       const user = await db.user.findUnique({
@@ -46,15 +48,16 @@ export class NotificationService {
 
         await expo.sendPushNotificationsAsync([notification])
       }
-
-      await db.notification.create({
-        data: {
-          senderId: fromUserId,
-          userId: toUserId,
-          message,
-          type,
-        },
-      })
+      if (saveToDb) {
+        await db.notification.create({
+          data: {
+            senderId: fromUserId,
+            userId: toUserId,
+            message,
+            type,
+          },
+        })
+      }
     } catch (err) {
       console.log("Error sending notification", err)
       throw new Error("Error sending notification")

@@ -78,6 +78,7 @@ async function processNewUsers() {
           title: `@${user.username}`,
           message: "your spotify profile has synced",
           type: "ALERT",
+          saveToDb: false,
         })
         console.log(`Processed user ${user.id}`)
       } catch (error) {
