@@ -1,8 +1,6 @@
 import db from "@/lib/db"
 import { expo } from "@/utils/expo-notifications"
-import { withSpotifyApi } from "@/utils/withSpotifyApi"
-import { NotificationType, User } from "@prisma/client"
-import { AccessToken, SpotifyApi } from "@spotify/web-api-ts-sdk"
+import { NotificationType } from "@prisma/client"
 import Expo, { ExpoPushMessage } from "expo-server-sdk"
 
 interface CreateNotification {
@@ -42,7 +40,8 @@ export class NotificationService {
             fromUserId,
             type,
           },
-          priority: "normal",
+          priority: "high",
+          sound: "default",
         } as ExpoPushMessage
 
         await expo.sendPushNotificationsAsync([notification])
@@ -141,7 +140,8 @@ export class NotificationService {
         data: {
           type: "ALERT",
         },
-        priority: "normal",
+        priority: "high",
+        sound: "default",
       })) as ExpoPushMessage[]
 
       const chunks = expo.chunkPushNotifications(notifications)
