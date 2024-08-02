@@ -1,4 +1,3 @@
-import API_VERSION from "@/utils/version"
 import { NextFunction, Request, Response } from "express"
 import BaseController from "@/common/base-controller"
 import { AuthService } from "./auth.service"
@@ -32,7 +31,6 @@ export class AuthController extends BaseController<{
   )
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body
-    console.log("HERE")
     const data = await this.services.authService.refreshToken(refreshToken)
 
     return res.send(data)

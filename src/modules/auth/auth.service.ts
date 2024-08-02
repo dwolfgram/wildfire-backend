@@ -173,12 +173,6 @@ export class AuthService {
       })
 
       if (!existingToken) {
-        const actualToken = await db.spotifyToken.findFirst({
-          where: { userId: "f547d75d-9b35-49cf-b107-66ecc8d00287" },
-        })
-        console.log("------ REFRESH TOKEN NOT FOUND IN DB -------")
-        console.log("Refresh token received:", encrypt(refreshToken))
-        console.log("Actual db refresh token:", actualToken?.refreshToken)
         throw new UnauthorizedError("Refresh token is not valid.")
       }
 
