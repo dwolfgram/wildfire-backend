@@ -24,6 +24,12 @@ export class AuthController extends BaseController<{
       return res.send(data)
     }
   )
+  signUpOrLoginDemo = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const data = await this.services.authService.signUpOrLoginDemo()
+      return res.send(data)
+    }
+  )
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body
     console.log("HERE")

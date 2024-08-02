@@ -3,10 +3,10 @@ import { UnauthorizedError } from "@/errors/unauthorizedError"
 import axios from "axios"
 import dotenv from "dotenv"
 import db from "@/lib/db"
-import { decrypt, encrypt } from "@/lib/encrypt"
+import { encrypt } from "@/lib/encrypt"
 import { createJwt } from "@/lib/jwt"
 import { UserTrackService } from "../user-track/user-track.service"
-import { wait } from "@/utils/wait"
+import { formatSpotifyToken } from "@/utils/formatSpotifyToken"
 
 dotenv.config()
 
@@ -33,8 +33,6 @@ export class AuthService {
         },
       }
     )
-
-    console.log("Tokens:", data)
     return data
   }
   async signUpOrLogin(spotifyApiConfig: AccessToken) {
@@ -130,6 +128,43 @@ export class AuthService {
     )
 
     return transaction
+  }
+  async signUpOrLoginDemo() {
+    const user = await db.user.findUnique({
+      where: { email: "dwolfgram@comcast.net" },
+      select: {
+        id: true,
+        username: true,
+        discoverWeeklyId: true,
+        displayName: true,
+        spotifyId: true,
+        spotifyUri: true,
+        pfp: true,
+      },
+    })
+
+    if (!user) {
+      throw new Error("No demo user found")
+    }
+
+    const spotifyToken = await db.spotifyToken.findUnique({
+      where: {
+        userId: user.id,
+      },
+    })
+
+    if (!spotifyToken) {
+      throw new Error("No demo spotify tokens found")
+    }
+
+    // demo jwt
+    const jwt = "DEMO"
+
+    return {
+      wildfire_token: jwt,
+      spotify_auth: formatSpotifyToken(spotifyToken),
+      user,
+    }
   }
   async refreshToken(refreshToken: string) {
     try {

@@ -9,7 +9,8 @@
   "scripts": {
     "start:dev": "npx nodemon",
     "start": "node dist/app.js",
-    "build": "tsc && prisma generate",
+    "prod": "yarn run build && yarn run start",
+    "build": "./node_modules/.bin/rimraf dist && tsc && prisma generate",
     "migrate": "npx prisma migrate dev --name init"
   },
   "keywords": [],
