@@ -125,7 +125,7 @@ export class AuthService {
         }
       },
       {
-        timeout: 30000,
+        timeout: 10000000,
       }
     )
 
