@@ -2,7 +2,8 @@ import { UnauthorizedError } from "@/errors/unauthorizedError"
 import { AuthService } from "@/modules/auth/auth.service"
 import { AccessToken, SpotifyApi } from "@spotify/web-api-ts-sdk"
 import dotenv from "dotenv"
-import { isErrorWithMessage } from "./isErrorWithMessage"
+import { isErrorWithMessage } from "./isErrorWith"
+import SpotifyResponseValidator from "./spotifyHandlers/response"
 
 dotenv.config()
 
@@ -15,7 +16,9 @@ export const withSpotifyApi = async <T>(
   apiCall: SpotifyApiCall<T>,
   shouldRefresh?: boolean
 ): Promise<T> => {
-  const spotify = SpotifyApi.withAccessToken(SPOTIFY_CLIENT_ID, spotifyConfig)
+  const spotify = SpotifyApi.withAccessToken(SPOTIFY_CLIENT_ID, spotifyConfig, {
+    responseValidator: new SpotifyResponseValidator(),
+  })
   try {
     return await apiCall(spotify)
   } catch (error) {

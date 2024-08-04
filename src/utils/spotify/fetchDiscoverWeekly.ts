@@ -21,20 +21,23 @@ export const fetchDiscoverWeeklyTracks = async (
       let limit: 50 = 50
 
       while (true) {
-        const { items, total: fetchedTotal } =
-          await spotify.playlists.getPlaylistItems(
-            playlistId,
-            undefined,
-            undefined,
-            limit,
-            offset
-          )
+        const {
+          items,
+          total: fetchedTotal,
+          next,
+        } = await spotify.playlists.getPlaylistItems(
+          playlistId,
+          undefined,
+          undefined,
+          limit,
+          offset
+        )
 
         allTracks = [...allTracks, ...items]
         offset += limit
         total = fetchedTotal
 
-        if (allTracks.length >= total) break
+        if (!next || allTracks.length >= total) break
 
         await wait(500)
       }
@@ -54,15 +57,23 @@ export const fetchDiscoverWeeklyPlaylists = async (
     let limit: 50 = 50
 
     while (true) {
-      const { items, total: fetchedTotal } =
-        await spotify.currentUser.playlists.playlists(limit, offset)
+      const {
+        items,
+        total: fetchedTotal,
+        next,
+      } = await spotify.currentUser.playlists.playlists(limit, offset)
 
       allPlaylists = [...allPlaylists, ...items]
       offset += limit
       total = fetchedTotal
 
-      if (allPlaylists.length >= total) break
-      await wait(200)
+      console.log("Total to fetch: ", fetchedTotal)
+      console.log("Currently at: ", offset)
+      console.log("Tracks processed: ", allPlaylists.length)
+      console.log("has next page:", Boolean(next))
+
+      if (!next || allPlaylists.length >= total) break
+      await wait(500)
     }
 
     const discoverWeeklyPlaylists = allPlaylists.filter((playlist) =>

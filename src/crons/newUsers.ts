@@ -72,7 +72,6 @@ async function processNewUsers() {
           }
         )
 
-        await wait(10000)
         await notificationService.sendNotification({
           toUserId: userId,
           title: `@${user.username}`,
@@ -80,6 +79,7 @@ async function processNewUsers() {
           type: "ALERT",
           saveToDb: false,
         })
+        await wait(30000)
         console.log(`Processed user ${user.id}`)
       } catch (error) {
         console.error(`Failed to process user ${user.id}:`, error)

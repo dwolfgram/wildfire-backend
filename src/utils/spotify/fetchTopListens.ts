@@ -25,7 +25,7 @@ export const fetchSpotifyTopListens = async (spotifyConfig: AccessToken) =>
         )
 
         allTracks = [...allTracks, ...items]
-        await wait(200)
+        await wait(500)
       }
 
       return allTracks

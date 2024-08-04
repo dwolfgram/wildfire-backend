@@ -1,5 +1,5 @@
 import db from "@/lib/db"
-import { isErrorWithMessage } from "@/utils/isErrorWithMessage"
+import { isErrorWithMessage } from "@/utils/isErrorWith"
 import { withSpotifyApi } from "@/utils/withSpotifyApi"
 import { AccessToken } from "@spotify/web-api-ts-sdk"
 import dotenv from "dotenv"

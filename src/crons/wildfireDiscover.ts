@@ -74,7 +74,7 @@ async function processWildfireDiscover() {
           }
         )
 
-        await wait(10000)
+        await wait(20000)
         isProccessing = false
         console.log(`Processed user ${user.id}`)
       } catch (error) {

@@ -1,6 +1,7 @@
 import db from "@/lib/db"
 import { filterDuplicates } from "@/utils/filterDuplicates"
 import { getOneWeekAgoDate } from "@/utils/getOneWeekAgo"
+import { isErrorWithResponse } from "@/utils/isErrorWith"
 import {
   fetchDiscoverWeeklyPlaylists,
   fetchDiscoverWeeklyTracks,
@@ -264,7 +265,7 @@ export class UserTrackService {
 
       return discoverSongs
     } catch (error) {
-      console.error("Error getting spotify discover weekly:", error)
+      console.error("Error getting spotify discover weekly songs:", error)
       throw new Error("Unable to get spotify discover weekly songs")
     }
   }

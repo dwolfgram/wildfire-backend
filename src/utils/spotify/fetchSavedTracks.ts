@@ -4,7 +4,7 @@ import { withSpotifyApi } from "../withSpotifyApi"
 
 export const fetchAllLikedTracks = async (
   spotifyConfig: AccessToken,
-  delayBetweenReq: number = 200
+  delayBetweenReq: number = 500
 ) =>
   withSpotifyApi(
     spotifyConfig,
@@ -15,14 +15,17 @@ export const fetchAllLikedTracks = async (
       let limit: 50 = 50
 
       while (true) {
-        const { items, total: fetchedTotal } =
-          await spotify.currentUser.tracks.savedTracks(limit, offset)
+        const {
+          items,
+          total: fetchedTotal,
+          next,
+        } = await spotify.currentUser.tracks.savedTracks(limit, offset)
 
         allTracks = [...allTracks, ...items]
         offset += limit
         total = fetchedTotal
 
-        if (allTracks.length >= total) break
+        if (!next || allTracks.length >= total) break
 
         await wait(delayBetweenReq)
       }
@@ -53,10 +56,8 @@ export const fetchSavedTracksUpToDate = async (
 
       while (hasMoreTracks) {
         try {
-          const { items, total } = await spotify.currentUser.tracks.savedTracks(
-            limit,
-            offset
-          )
+          const { items, total, next } =
+            await spotify.currentUser.tracks.savedTracks(limit, offset)
           offset += limit
           const filteredTracks = items.filter(
             ({ added_at }) => new Date(added_at) >= cutoff
@@ -65,7 +66,7 @@ export const fetchSavedTracksUpToDate = async (
             hasMoreTracks = false
           }
           allTracks = [...allTracks, ...filteredTracks]
-          if (allTracks.length >= total) {
+          if (!next) {
             hasMoreTracks = false
           }
         } catch (error) {
