@@ -114,6 +114,7 @@ export class SongService {
         title: `@${newSong.sender?.username}`,
         message: `sent you a song`,
         type: "RECEIVED_SONG",
+        songId: newSong.id,
       })
 
       if (historySongIds.length > 0) {
@@ -131,6 +132,7 @@ export class SongService {
             title: `@${newSong.sender?.username}`,
             message: `shared a song they found from you`,
             type: "SHARED_SONG",
+            songId: newSong.id,
           })
       }
 
@@ -313,6 +315,7 @@ export class SongService {
               title: `@${authUser.username}`,
               message: `liked a song they found from you`,
               type: "LIKED_SONG",
+              songId: newSong.id,
             })
         }
 

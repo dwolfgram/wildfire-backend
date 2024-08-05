@@ -73,7 +73,7 @@ export const fetchDiscoverWeeklyPlaylists = async (
       console.log("has next page:", Boolean(next))
 
       if (!next || allPlaylists.length >= total) break
-      await wait(500)
+      await wait(300)
     }
 
     const discoverWeeklyPlaylists = allPlaylists.filter((playlist) =>

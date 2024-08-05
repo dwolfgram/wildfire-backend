@@ -60,6 +60,7 @@ model Song {
   conversation    Conversation? @relation("conversationMessages", fields: [conversationId], references: [id])
   history         Song[]    @relation("SongHistory")
   inHistoryOf     Song[]    @relation("SongHistory")
+  notifications   Notification[]    @relation("SongNotifications")
 
   @@unique([userId, spotifyId, trackType])
   @@index([conversationId])
@@ -106,6 +107,8 @@ model Notification {
   senderId    String?   @db.Uuid
   sender      User?    @relation("UserSentNotifications", fields: [senderId], references: [id])
   user        User     @relation("UserNotifications", fields: [userId], references: [id])
+  songId      String?  @db.Uuid
+  song        Song?    @relation("SongNotifications", fields: [songId], references: [id])
 
   @@index([userId])
 }

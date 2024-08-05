@@ -11,6 +11,7 @@ interface CreateNotification {
   fromUserId?: string
   data?: Record<string, any>
   saveToDb?: boolean
+  songId?: string
 }
 
 export class NotificationService {
@@ -21,6 +22,7 @@ export class NotificationService {
     message,
     data,
     type,
+    songId,
     saveToDb = true,
   }: CreateNotification) => {
     try {
@@ -55,6 +57,7 @@ export class NotificationService {
             userId: toUserId,
             message,
             type,
+            songId,
           },
         })
       }
@@ -89,6 +92,13 @@ export class NotificationService {
         },
         include: {
           sender: true,
+          song: {
+            select: {
+              name: true,
+              albumImage: true,
+              artistName: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
