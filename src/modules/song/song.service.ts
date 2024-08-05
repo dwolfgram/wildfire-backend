@@ -309,7 +309,7 @@ export class SongService {
           for (const song of historySongs.slice(0, 4))
             await notificationService.sendNotification({
               toUserId: song.userId! || song.senderId!,
-              fromUserId: data.senderId!,
+              fromUserId: data.senderId! || data.userId!,
               title: `@${authUser.username}`,
               message: `liked a song they found from you`,
               type: "LIKED_SONG",
