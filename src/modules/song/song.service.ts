@@ -125,7 +125,13 @@ export class SongService {
             },
           },
         })
-        for (const song of historySongs.slice(0, 4))
+        const notifiedUsers = new Set([data.receiverId])
+        for (const song of historySongs.slice(0, 4)) {
+          const toUserId = song.userId || song.senderId
+
+          if (!toUserId || notifiedUsers.has(toUserId)) {
+            continue
+          }
           await notificationService.sendNotification({
             toUserId: song.userId! || song.senderId!,
             fromUserId: data.senderId!,
@@ -134,6 +140,8 @@ export class SongService {
             type: "SHARED_SONG",
             songId: newSong.id,
           })
+          notifiedUsers.add(toUserId)
+        }
       }
 
       return newSong
@@ -308,15 +316,23 @@ export class SongService {
               },
             },
           })
-          for (const song of historySongs.slice(0, 4))
+
+          const notifiedUsers = new Set()
+          for (const song of historySongs.slice(0, 4)) {
+            const toUserId = song.userId || song.senderId
+
+            if (!toUserId || notifiedUsers.has(toUserId)) {
+              continue
+            }
             await notificationService.sendNotification({
               toUserId: song.userId! || song.senderId!,
               fromUserId: data.senderId! || data.userId!,
               title: `@${authUser.username}`,
               message: `liked a song they found from you`,
               type: "LIKED_SONG",
-              songId: newSong.id,
             })
+            notifiedUsers.add(toUserId)
+          }
         }
 
         return newSong
