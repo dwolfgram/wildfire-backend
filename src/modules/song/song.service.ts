@@ -125,6 +125,7 @@ export class SongService {
             },
           },
         })
+
         const notifiedUsers = new Set([data.receiverId])
         for (const song of historySongs.slice(0, 4)) {
           const toUserId = song.userId || song.senderId
@@ -326,10 +327,11 @@ export class SongService {
             }
             await notificationService.sendNotification({
               toUserId: song.userId! || song.senderId!,
-              fromUserId: data.senderId! || data.userId!,
+              fromUserId: authUser.id,
               title: `@${authUser.username}`,
               message: `liked a song they found from you`,
               type: "LIKED_SONG",
+              songId: newSong.id,
             })
             notifiedUsers.add(toUserId)
           }
