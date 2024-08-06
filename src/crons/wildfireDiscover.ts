@@ -15,6 +15,10 @@ async function processWildfireDiscover() {
 
     isProccessing = true
     const allUsers = await db.user.findMany({
+      where: {
+        username: { not: null },
+        discoverWeeklySelected: true,
+      },
       include: {
         spotifyTokens: true,
       },
@@ -35,7 +39,7 @@ async function processWildfireDiscover() {
         const userId = user.id
         const disoverWeeklyId = user.discoverWeeklyId
 
-        if (!disoverWeeklyId) {
+        if (!user.discoverWeeklySelected) {
           console.log("CANNOT PULL USER TRACKS, NO DISCOVER WEEKLY ID")
           continue
         }
@@ -56,18 +60,20 @@ async function processWildfireDiscover() {
               effectiveDate,
               spotifyApiConfig,
               prisma as PrismaClient
-            ),
-              await userTracksService.getAndStoreUsersTopListens(
-                userId,
-                spotifyApiConfig,
-                prisma as PrismaClient
-              ),
+            )
+            await userTracksService.getAndStoreUsersTopListens(
+              userId,
+              spotifyApiConfig,
+              prisma as PrismaClient
+            )
+            if (disoverWeeklyId) {
               await userTracksService.getAndStoreDiscoverWeeklySongs(
                 userId,
                 disoverWeeklyId,
                 spotifyApiConfig,
                 prisma as PrismaClient
               )
+            }
           },
           {
             timeout: 10000000,

@@ -31,6 +31,20 @@ export class UserTrackService {
       throw new Error("User not found")
     }
 
+    const existingSavedTrackIds = await db.song
+      .findMany({
+        where: {
+          userId,
+          trackType: {
+            in: ["WILDFIRE_LIKE", "SAVED_TRACK"],
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+      .then((tracks) => tracks.map((track) => track.id))
+
     const userTracks = await db.song.findMany({
       where: {
         user: {
@@ -43,6 +57,7 @@ export class UserTrackService {
             lt: oneWeekAgo,
           },
         },
+        trackType: "SAVED_TRACK",
         AND: [
           {
             createdAt: {
@@ -55,14 +70,9 @@ export class UserTrackService {
             },
           },
         ],
-        OR: [
-          {
-            trackType: "SAVED_TRACK",
-          },
-          {
-            trackType: "TOP_LISTEN",
-          },
-        ],
+        id: {
+          notIn: existingSavedTrackIds,
+        },
       },
       include: {
         user: true,
@@ -76,6 +86,7 @@ export class UserTrackService {
     trackType: TrackType,
     options: { page: number; limit: number }
   ) => {
+    const oneWeekAgo = getOneWeekAgoDate()
     try {
       const tracks = await db.song.findMany({
         where: {
@@ -86,6 +97,13 @@ export class UserTrackService {
                   { trackType: TrackType.SAVED_TRACK },
                   { trackType: TrackType.WILDFIRE_LIKE },
                 ],
+              }
+            : trackType === TrackType.DISCOVER_WEEKLY
+            ? {
+                trackType,
+                createdAt: {
+                  gte: oneWeekAgo,
+                },
               }
             : { trackType }),
         },
@@ -121,7 +139,7 @@ export class UserTrackService {
         skip: (options.page - 1) * options.limit,
         take: options.limit,
         orderBy: {
-          createdAt: trackType === TrackType.TOP_LISTEN ? "asc" : "desc",
+          createdAt: "desc",
         },
       })
 

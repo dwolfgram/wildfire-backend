@@ -51,6 +51,7 @@ export class AuthService {
             id: true,
             username: true,
             discoverWeeklyId: true,
+            discoverWeeklySelected: true,
             displayName: true,
             spotifyId: true,
             spotifyUri: true,
@@ -76,6 +77,7 @@ export class AuthService {
               id: true,
               username: true,
               discoverWeeklyId: true,
+              discoverWeeklySelected: true,
               displayName: true,
               spotifyId: true,
               spotifyUri: true,
@@ -90,10 +92,23 @@ export class AuthService {
               spotifyApiConfig
             )
 
+          if (discoverWeeklyPlaylists.length === 0) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                discoverWeeklyId: discoverWeeklyPlaylists[0].id,
+                discoverWeeklySelected: true,
+              },
+            })
+          }
+
           if (discoverWeeklyPlaylists.length === 1) {
             user = await prisma.user.update({
               where: { id: user.id },
-              data: { discoverWeeklyId: discoverWeeklyPlaylists[0].id },
+              data: {
+                discoverWeeklyId: discoverWeeklyPlaylists[0].id,
+                discoverWeeklySelected: true,
+              },
             })
           }
         }

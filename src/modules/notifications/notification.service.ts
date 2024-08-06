@@ -91,12 +91,23 @@ export class NotificationService {
           userId: userId,
         },
         include: {
-          sender: true,
+          sender: {
+            select: {
+              username: true,
+              pfp: true,
+            },
+          },
           song: {
             select: {
               name: true,
               albumImage: true,
               artistName: true,
+              conversationId: true,
+              receiver: {
+                select: {
+                  username: true,
+                },
+              },
             },
           },
         },

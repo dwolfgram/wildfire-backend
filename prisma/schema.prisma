@@ -31,7 +31,8 @@ model User {
   receivedConversations Conversation[]    @relation("userB")
   notificationToken     String?           @unique
   spotifyTokens         SpotifyToken[]    @relation("UserSpotifyTokens")
-  discoverWeeklyId      String?           
+  discoverWeeklyId      String?       
+  discoverWeeklySelected Boolean         @default(false)
 
   @@index([email])
 }

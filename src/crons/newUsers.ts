@@ -16,7 +16,7 @@ async function processNewUsers() {
     const newUsers = await db.user.findMany({
       where: {
         username: { not: null },
-        discoverWeeklyId: { not: null },
+        discoverWeeklySelected: true,
         userTracks: { none: {} },
       },
       include: {
@@ -34,7 +34,7 @@ async function processNewUsers() {
         const userId = user.id
         const disoverWeeklyId = user.discoverWeeklyId
 
-        if (!disoverWeeklyId) {
+        if (!user.discoverWeeklySelected) {
           console.log("CANNOT PULL USER TRACKS, NO DISCOVER WEEKLY ID")
           continue
         }
@@ -45,18 +45,20 @@ async function processNewUsers() {
               userId,
               spotifyApiConfig,
               prisma as PrismaClient
-            ),
-              await userTracksService.getAndStoreUsersTopListens(
-                userId,
-                spotifyApiConfig,
-                prisma as PrismaClient
-              ),
+            )
+            await userTracksService.getAndStoreUsersTopListens(
+              userId,
+              spotifyApiConfig,
+              prisma as PrismaClient
+            )
+            if (disoverWeeklyId) {
               await userTracksService.getAndStoreDiscoverWeeklySongs(
                 userId,
                 disoverWeeklyId,
                 spotifyApiConfig,
                 prisma as PrismaClient
               )
+            }
 
             await prisma.user.update({
               where: {

@@ -115,6 +115,7 @@ export class SongService {
         message: `sent you a song`,
         type: "RECEIVED_SONG",
         songId: newSong.id,
+        saveToDb: false,
       })
 
       if (historySongIds.length > 0) {
