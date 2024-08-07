@@ -55,23 +55,18 @@ export const fetchSavedTracksUpToDate = async (
       let limit: 50 = 50
 
       while (hasMoreTracks) {
-        try {
-          const { items, total, next } =
-            await spotify.currentUser.tracks.savedTracks(limit, offset)
-          offset += limit
-          const filteredTracks = items.filter(
-            ({ added_at }) => new Date(added_at) >= cutoff
-          )
-          if (filteredTracks.length === 0) {
-            hasMoreTracks = false
-          }
-          allTracks = [...allTracks, ...filteredTracks]
-          if (!next) {
-            hasMoreTracks = false
-          }
-        } catch (error) {
-          console.error("Error fetching tracks:", error)
-          throw new Error("Unable to fetch tracks from Spotify")
+        const { items, total, next } =
+          await spotify.currentUser.tracks.savedTracks(limit, offset)
+        offset += limit
+        const filteredTracks = items.filter(
+          ({ added_at }) => new Date(added_at) >= cutoff
+        )
+        if (filteredTracks.length === 0) {
+          hasMoreTracks = false
+        }
+        allTracks = [...allTracks, ...filteredTracks]
+        if (!next) {
+          hasMoreTracks = false
         }
       }
 

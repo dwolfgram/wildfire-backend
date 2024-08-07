@@ -27,21 +27,31 @@ export const withSpotifyApi = async <T>(
       error.message.toLowerCase().includes("bad or expired token")
     ) {
       if (shouldRefresh) {
-        const authService = new AuthService()
-        const newTokens = await authService.refreshToken(
-          spotifyConfig.refresh_token
-        )
-
         console.log("SPOTIFY TOKEN EXPIRED, RENEWING!")
+        try {
+          const authService = new AuthService()
+          const newTokens = await authService.refreshToken(
+            spotifyConfig.refresh_token
+          )
 
-        const newSpotify = SpotifyApi.withAccessToken(
-          SPOTIFY_CLIENT_ID,
-          newTokens.spotify_auth
-        )
+          const newSpotify = SpotifyApi.withAccessToken(
+            SPOTIFY_CLIENT_ID,
+            newTokens.spotify_auth,
+            {
+              responseValidator: new SpotifyResponseValidator(),
+            }
+          )
 
-        return await apiCall(newSpotify)
+          return await apiCall(newSpotify)
+        } catch (refreshError) {
+          console.error("Failed to refresh Spotify token:", refreshError)
+          throw new UnauthorizedError(
+            "Spotify token is expired and could not be refreshed."
+          )
+        }
+      } else {
+        throw new UnauthorizedError("Spotify token is expired.")
       }
-      throw new UnauthorizedError("Spotify token is expired.")
     } else {
       throw error
     }

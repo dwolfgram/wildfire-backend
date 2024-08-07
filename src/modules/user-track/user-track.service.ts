@@ -1,7 +1,6 @@
 import db from "@/lib/db"
 import { filterDuplicates } from "@/utils/filterDuplicates"
 import { getOneWeekAgoDate } from "@/utils/getOneWeekAgo"
-import { isErrorWithResponse } from "@/utils/isErrorWith"
 import {
   fetchDiscoverWeeklyPlaylists,
   fetchDiscoverWeeklyTracks,
@@ -12,7 +11,6 @@ import {
 } from "@/utils/spotify/fetchSavedTracks"
 import { fetchSpotifyTopListens } from "@/utils/spotify/fetchTopListens"
 import { PrismaClient, TrackType } from "@prisma/client"
-import { QueryOptions } from "@prisma/client/runtime/library"
 import { AccessToken, SavedTrack, Track } from "@spotify/web-api-ts-sdk"
 
 export class UserTrackService {
@@ -40,10 +38,10 @@ export class UserTrackService {
           },
         },
         select: {
-          id: true,
+          spotifyId: true,
         },
       })
-      .then((tracks) => tracks.map((track) => track.id))
+      .then((tracks) => tracks.map((track) => track.spotifyId))
 
     const userTracks = await db.song.findMany({
       where: {
@@ -53,33 +51,28 @@ export class UserTrackService {
               followerId: userId,
             },
           },
-          createdAt: {
-            lt: oneWeekAgo,
-          },
         },
         trackType: "SAVED_TRACK",
-        AND: [
-          {
-            createdAt: {
-              gte: oneWeekAgo,
-            },
-          },
-          {
-            createdAt: {
-              gte: user.createdInitialTracksAt || oneWeekAgo,
-            },
-          },
-        ],
-        id: {
+        createdAt: {
+          gt:
+            user.createdInitialTracksAt &&
+            user.createdInitialTracksAt < oneWeekAgo
+              ? user.createdInitialTracksAt
+              : oneWeekAgo,
+        },
+        spotifyId: {
           notIn: existingSavedTrackIds,
         },
       },
       include: {
         user: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     })
 
-    return userTracks
+    return filterDuplicates(userTracks, "spotifyId")
   }
   getUserTracksByType = async (
     userId: string,
@@ -215,8 +208,8 @@ export class UserTrackService {
 
       return savedTracks
     } catch (error) {
-      console.error("Error getting spotify likes:", error)
-      throw new Error("Unable to get spotify likes")
+      console.error("Error getting spotify likes after date:", error)
+      throw error
     }
   }
   getAndStoreUsersTopListens = async (
@@ -251,7 +244,7 @@ export class UserTrackService {
       return savedTracks
     } catch (error) {
       console.error("Error getting spotify top listens:", error)
-      throw new Error("Unable to get spotify top listens")
+      throw error
     }
   }
   getAndStoreDiscoverWeeklySongs = async (
@@ -284,7 +277,7 @@ export class UserTrackService {
       return discoverSongs
     } catch (error) {
       console.error("Error getting spotify discover weekly songs:", error)
-      throw new Error("Unable to get spotify discover weekly songs")
+      throw error
     }
   }
   getUserDiscoverWeeklyPlaylists = async (spotifyConfig: AccessToken) => {

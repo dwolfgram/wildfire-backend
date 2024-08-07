@@ -61,16 +61,28 @@ async function processWildfireDiscover() {
               spotifyApiConfig,
               prisma as PrismaClient
             )
+            // in case token refreshed in first request
+            const possiblyNewTokens = await prisma.spotifyToken.findFirst({
+              where: {
+                userId: user.id,
+              },
+            })
+            if (!possiblyNewTokens) {
+              console.log("USER HAS NO SPOTIFY TOKENS, SKIPPING!")
+              throw new Error("no spotify api config.")
+            }
+            const newSpotifyConfig = formatSpotifyToken(possiblyNewTokens)
+
             await userTracksService.getAndStoreUsersTopListens(
               userId,
-              spotifyApiConfig,
+              newSpotifyConfig,
               prisma as PrismaClient
             )
             if (disoverWeeklyId) {
               await userTracksService.getAndStoreDiscoverWeeklySongs(
                 userId,
                 disoverWeeklyId,
-                spotifyApiConfig,
+                newSpotifyConfig,
                 prisma as PrismaClient
               )
             }
@@ -92,6 +104,8 @@ async function processWildfireDiscover() {
     console.log("error proccessing wildfire discover weeklys", err)
   }
 }
+
+// processWildfireDiscover()
 
 cron.schedule(
   "0 0 * * 3",

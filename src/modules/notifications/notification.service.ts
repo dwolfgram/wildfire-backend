@@ -149,6 +149,8 @@ export class NotificationService {
       },
     })
 
+    const notifications: ExpoPushMessage[] = []
+
     for (const user of validUsers) {
       if (!Expo.isExpoPushToken(user.notificationToken)) {
         console.error(
@@ -157,7 +159,7 @@ export class NotificationService {
         continue
       }
 
-      const notifications = validUsers.map((user) => ({
+      notifications.push({
         to: user.notificationToken!,
         title: `@${user.username}`,
         body: "new wildfire weekly is now available",
@@ -166,15 +168,15 @@ export class NotificationService {
         },
         priority: "high",
         sound: "default",
-      })) as ExpoPushMessage[]
+      })
+    }
 
-      const chunks = expo.chunkPushNotifications(notifications)
-      for (let chunk of chunks) {
-        try {
-          await expo.sendPushNotificationsAsync(chunk)
-        } catch (error) {
-          console.error(error)
-        }
+    const chunks = expo.chunkPushNotifications(notifications)
+    for (let chunk of chunks) {
+      try {
+        await expo.sendPushNotificationsAsync(chunk)
+      } catch (error) {
+        console.error(error)
       }
     }
   }
