@@ -18,22 +18,27 @@ const AUTH_HEADER = Buffer.from(
 
 export class AuthService {
   async swapCodeForTokens(code: string, redirectUri: string) {
-    const { data } = await axios.post<AccessToken>(
-      "https://accounts.spotify.com/api/token",
-      null,
-      {
-        params: {
-          grant_type: "authorization_code",
-          code,
-          redirect_uri: redirectUri || "com.wildfire.rn://",
-        },
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${AUTH_HEADER}`,
-        },
-      }
-    )
-    return data
+    try {
+      const { data } = await axios.post<AccessToken>(
+        "https://accounts.spotify.com/api/token",
+        null,
+        {
+          params: {
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: redirectUri || "com.wildfire.rn://",
+          },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${AUTH_HEADER}`,
+          },
+        }
+      )
+      return data
+    } catch (err) {
+      console.log("Error exchanging code for tokens", err)
+      throw err
+    }
   }
   async signUpOrLogin(spotifyApiConfig: AccessToken) {
     const transaction = await db.$transaction(
