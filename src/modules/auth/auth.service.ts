@@ -101,7 +101,6 @@ export class AuthService {
             user = await prisma.user.update({
               where: { id: user.id },
               data: {
-                discoverWeeklyId: null,
                 discoverWeeklySelected: true,
               },
             })
