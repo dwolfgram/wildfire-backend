@@ -3,7 +3,7 @@ import { NotificationService } from "@/modules/notifications/notification.servic
 import { UserTrackService } from "@/modules/user-track/user-track.service"
 import { formatSpotifyToken } from "@/utils/formatSpotifyToken"
 import { wait } from "@/utils/wait"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, TrackType } from "@prisma/client"
 import cron from "node-cron"
 
 let isProccessing = false
@@ -17,7 +17,11 @@ async function processNewUsers() {
       where: {
         username: { not: null },
         discoverWeeklySelected: true,
-        userTracks: { none: {} },
+        userTracks: {
+          every: {
+            trackType: TrackType.WILDFIRE_LIKE,
+          },
+        },
       },
       include: {
         spotifyTokens: true,
