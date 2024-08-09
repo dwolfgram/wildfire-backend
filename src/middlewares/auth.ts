@@ -20,12 +20,12 @@ const spotifyAuthMiddleware = async (
   const token = authHeader.split(" ")[1]
 
   try {
-    if (token.toLowerCase() === "demo") {
-      const { user, tokenRecord } = await handleDemoAccount()
-      req.user = user
-      req.spotifyApiConfig = formatSpotifyToken(tokenRecord)
-      return next()
-    }
+    // if (token.toLowerCase() === "demo") {
+    //   const { user, tokenRecord } = await handleDemoAccount()
+    //   req.user = user
+    //   req.spotifyApiConfig = formatSpotifyToken(tokenRecord)
+    //   return next()
+    // }
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string
       roles: string[]
