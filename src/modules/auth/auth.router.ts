@@ -11,10 +11,10 @@ class AuthRouter extends BaseRouter<AuthController> {
       this.controller.swapCodeForTokens
     )
     this.router.post(`${API_VERSION}/auth/login`, this.controller.signUpOrLogin)
-    this.router.post(
-      `${API_VERSION}/auth/login/demo`,
-      this.controller.signUpOrLoginDemo
-    )
+    // this.router.post(
+    //   `${API_VERSION}/auth/login/demo`,
+    //   this.controller.signUpOrLoginDemo
+    // )
     this.router.post(
       `${API_VERSION}/auth/refresh-token`,
       this.controller.refreshToken
